@@ -11,7 +11,7 @@ const MAX_DOMAIN_NAME_WIRE_OCTETS: u8 = 255;
 /// The root label won't be represented by a compression pointer to a compression pointer,
 /// hence the -2 to exclude the smallest valid root label.
 const MAX_COMPRESSION_POINTERS: u8 =
-    (MAX_DOMAIN_NAME_WIRE_OCTETS + 1) / 2 - 2;
+    ((MAX_DOMAIN_NAME_WIRE_OCTETS as u16 + 1) / 2 - 2) as u8;
 
 /// Maximum length of a domain name in presentation format
 /// The maximum wire length of a domain name is 255 octets, with the maximum label length being 63.
@@ -47,11 +47,11 @@ pub enum Error {
     BadTime,
 }
 
-impl std::error::Error for DnsError {}
+impl std::error::Error for Error {}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use DnsError::*;
+        use Error::*;
         let msg = match self {
             BadAlgorithm => "bad algorithm",
             BadAuthentication => "bad authentication",
