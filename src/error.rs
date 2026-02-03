@@ -1,11 +1,10 @@
-use std::fmt;
+pub type Result<T> = std::result::Result<T, Error>;
 
-// internal
-use crate::msg;
-
-/// Error defined
-#[derive(Debug)]
+/// dns-kit Error defined
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
+    /// There is no more work to do.
+    Done,
     /// BadAlgorithm indicates an error with the (DNSSEC) algorithm.
     BadAlgorithm,
     /// BadAuthentication indicates an error in the TSIG authentication.
@@ -40,37 +39,42 @@ pub enum Error {
     BadTime,
 }
 
-impl std::error::Error for Error {}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use Error::*;
-        let msg = match self {
-            BadAlgorithm => "bad algorithm",
-            BadAuthentication => "bad authentication",
-            BufferTooSmall => "buffer size too small",
-            ConnEmpty => "conn has no connection",
-            BadExtendedRcode => "bad extended rcode",
-            NotFqdn => "domain must be fully qualified",
-            IdMismatch => "id mismatch",
-            BadKeyAlgorithm => "bad key algorithm",
-            BadKey => "bad key",
-            BadKeySize => "bad key size",
-            LongDomain => &format!(
+        match self {
+            Done => write!(f, "done"),
+            BadAlgorithm => write!(f, "bad algorithm"),
+            BadAuthentication => write!(f, "bad authentication"),
+            BufferTooSmall => write!(f, "buffer size too small"),
+            ConnEmpty => write!(f, "conn has no connection"),
+            BadExtendedRcode => write!(f, "bad extended rcode"),
+            NotFqdn => write!(f, "domain must be fully qualified"),
+            IdMismatch => write!(f, "id mismatch"),
+            BadKeyAlgorithm => write!(f, "bad key algorithm"),
+            BadKey => write!(f, "bad key"),
+            BadKeySize => write!(f, "bad key size"),
+            LongDomain => write!(
+                f,
                 "domain name exceeded {} wire-format octets",
-                msg::MAX_DOMAIN_NAME_WIRE_OCTETS
+                crate::msg::MAX_DOMAIN_NAME_WIRE_OCTETS
             ),
-            NoSignature => "no signature found",
-            BadPrivateKey => "bad private key",
-            BadRcode => "bad rcode",
-            BadRdata => "bad rdata",
-            BadRrset => "bad rrset",
-            NoSecrets => "no secrets defined",
-            ShortRead => "short read",
-            BadSignature => "bad signature",
-            NoSoa => "no SOA",
-            BadTime => "bad time",
-        };
-        write!(f, "{}", msg)
+            NoSignature => write!(f, "no signature found"),
+            BadPrivateKey => write!(f, "bad private key"),
+            BadRcode => write!(f, "bad rcode"),
+            BadRdata => write!(f, "bad rdata"),
+            BadRrset => write!(f, "bad rrset"),
+            NoSecrets => write!(f, "no secrets defined"),
+            ShortRead => write!(f, "short read"),
+            BadSignature => write!(f, "bad signature"),
+            NoSoa => write!(f, "no SOA"),
+            BadTime => write!(f, "bad time"),
+        }
+    }
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
     }
 }
